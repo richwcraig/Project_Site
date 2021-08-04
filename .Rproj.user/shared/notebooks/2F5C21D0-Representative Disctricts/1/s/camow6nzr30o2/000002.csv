@@ -1,0 +1,83 @@
+"0","```r
+library(tidycensus)
+```"
+"1","package ã¤¼ã¸±tidycensusã¤¼ã¸² was built under R version 4.0.3
+"
+"0","```r
+library(tidyverse)
+```"
+"1","Registered S3 methods overwritten by 'dbplyr':
+  method         from
+  print.tbl_lazy     
+  print.tbl_sql      
+-- Attaching packages --------------------------------------------------------------------------------------------- tidyverse 1.3.0 --
+v ggplot2 3.3.2     v purrr   0.3.4
+v tibble  3.1.0     v dplyr   1.0.2
+v tidyr   1.1.3     v stringr 1.4.0
+v readr   1.3.1     v forcats 0.5.0
+package ‘tibble’ was built under R version 4.0.5package ‘tidyr’ was built under R version 4.0.5-- Conflicts ------------------------------------------------------------------------------------------------ tidyverse_conflicts() --
+x dplyr::filter() masks stats::filter()
+x dplyr::lag()    masks stats::lag()
+"
+"0","```r
+library(sf)
+```"
+"1","package ‘sf’ was built under R version 4.0.3Linking to GEOS 3.8.0, GDAL 3.0.4, PROJ 6.3.1
+"
+"0","```r
+library(dplyr)
+
+census_vars <- load_variables(2017, \"acs5\", cache = TRUE)
+
+this.year=2019
+
+Oregon_Senate_race_acs <- get_acs(geography = \"state legislative district (upper chamber)\",
+                                  year=this.year,
+                                  state = \"OR\", 
+                                  variables = c(\"B02001_001\",\"B02001_002\",\"B03001_003\",\"B02001_003\",\"B02001_005\"))
+```"
+"1","Getting data from the 2015-2019 5-year ACS
+Using FIPS code '41' for state 'OR'
+"
+"0","```r
+Oregon_Senate_housing_acs<- get_acs(geography = \"state legislative district (upper chamber)\",
+                                    year=this.year, state = \"OR\", 
+                                    variables = c(\"B02001_001\",\"B25001_001\"),
+                                    geometry = TRUE)
+```"
+"1","Getting data from the 2015-2019 5-year ACS
+Downloading feature geometry from the Census website.  To cache shapefiles for use in future sessions, set `options(tigris_use_cache = TRUE)`.
+Using FIPS code '41' for state 'OR'
+"
+"1","
+  |                                                                                                                                  
+  |                                                                                                                            |   0%
+  |                                                                                                                                  
+  |=========                                                                                                                   |   7%
+  |                                                                                                                                  
+  |==================                                                                                                          |  14%
+  |                                                                                                                                  
+  |===================                                                                                                         |  15%
+  |                                                                                                                                  
+  |============================                                                                                                |  23%
+  |                                                                                                                                  
+  |===================================                                                                                         |  28%
+  |                                                                                                                                  
+  |============================================                                                                                |  35%
+  |                                                                                                                                  
+  |=====================================================                                                                       |  43%
+  |                                                                                                                                  
+  |=========================================================                                                                   |  46%
+  |                                                                                                                                  
+  |==================================================================                                                          |  54%
+  |                                                                                                                                  
+  |=======================================================================                                                     |  57%
+  |                                                                                                                                  
+  |==============================================================================================                              |  75%
+  |                                                                                                                                  
+  |===========================================================================================================                 |  86%
+  |                                                                                                                                  
+  |====================================================================================================================        |  94%
+  |                                                                                                                                  
+  |============================================================================================================================| 100%
+"

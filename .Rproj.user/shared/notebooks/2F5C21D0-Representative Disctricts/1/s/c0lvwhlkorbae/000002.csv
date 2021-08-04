@@ -1,0 +1,31 @@
+"0","```r
+Oregon_Senate_housing<-Oregon_Senate_housing_acs
+Oregon_Senate_housing$area <- st_area(Oregon_Senate_housing)
+
+Oregon_Senate_housing<-Oregon_Senate_housing%>%
+  as.tibble()%>%
+  select(GEOID,NAME,area,variable,estimate)
+```"
+"1","`as.tibble()` is deprecated as of tibble 2.0.0.
+Please use `as_tibble()` instead.
+The signature and semantics have changed, see `?as_tibble`.
+This warning is displayed once every 8 hours.
+Call `lifecycle::last_warnings()` to see where this warning was generated.
+"
+"0","```r
+Oregon_Senate_housing<-Oregon_Senate_housing%>%
+  pivot_wider(id_cols = c(\"GEOID\", \"NAME\",\"area\"),names_from = \"variable\", values_from = estimate)%>%
+  mutate(area=area*3.86102e-7)%>%
+  select(NAME, area, total_pop= B02001_001, total_houses=B25001_001)
+
+Oregon_Senate_housing<-Oregon_Senate_housing%>%
+  mutate(district_house_density=total_houses/area,district_pop_density=total_pop/area)%>%
+  mutate(median_state_house_density=median(district_house_density),median_state_pop_density=median(district_pop_density))%>%
+  mutate(district_house_diff=district_house_density-median_state_house_density,district_pop_diff=district_pop_density-median_state_pop_density)%>%
+  mutate(total_error=abs(district_house_diff)+abs(district_pop_diff))%>%
+  arrange(total_error)%>%
+  mutate(rank=rank(total_error))
+
+House_rank<-Oregon_Senate_housing%>%
+  select(NAME, rank_house = rank)
+```"

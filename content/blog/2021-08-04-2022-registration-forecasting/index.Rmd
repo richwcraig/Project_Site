@@ -1,0 +1,544 @@
+---
+title: 2022 Registration Forecasting
+author: Richard Craig
+date: '2021-08-04'
+slug: []
+categories:
+  - Forecasting
+  - Oregon Politics
+tags:
+  - Elections
+  - Voter Registration
+  - Politics
+  - R Programming
+meta_img: images/image.png
+description: This is a stroll through how I forecasted the 2022 Oregon Registrations.
+---
+
+```{r setup, include=FALSE}
+
+library(fable)
+library(feasts)
+library(fpp3)
+library(distributional)
+library(tidyverse)
+library(lubridate)
+library(tmap)
+library(tigris)
+library(tidycensus)
+library(leaflet)
+library(maps)
+library("ggrepel") 
+voters<-read_csv("G:/My Drive/Documents/Willamette/Graduate/DATA 510 Capstone/Voter Registration.csv")
+
+```
+
+# Cleaning the Data and Creating the Senate Datasets
+
+You can find the most up to date Oregon voter registration data here:
+https://data.oregon.gov/Administrative/Voter-Registration-Change-Over-Time/2ppg-zt4s
+
+This next chunk in largely just cleaning up the data types and also selecting the correct rows of interest as the dataset contains many features that are just codes used by the state. 
+```{r Cleaning Voter Dataset, message=FALSE}
+
+voters_clean<-voters%>%
+    mutate(Date=mdy(SYSDATE),House_District= as.factor(HD_CODE), Count=`COUNT(V.ID)`)%>%
+    select(Date,House_District,PARTY,Count)%>%
+    group_by(Date,House_District,PARTY)%>%
+    mutate(Total_For_Party=sum(Count))
+
+ voters_clean<-voters_clean%>%
+   select(c(-Count))%>%
+   unique()%>%
+   arrange(Date)
+
+
+voters_clean<-voters_clean%>%
+  pivot_wider(id_cols = c("Date", "House_District"),names_from = PARTY, values_from = Total_For_Party)
+
+voters_clean$`Americans Elect`[is.na(voters_clean$`Americans Elect`)] <- 0
+voters_clean$`Non Partisan`[is.na(voters_clean$`Non Partisan`)] <- 0
+
+voters_clean<-voters_clean%>%
+  mutate(Other2=Other+`Working Families Party of Oregon`+Progressive+`Pacific Green`+Constitution+Libertarian+Other+`Americans Elect`+`Non Partisan`,
+         District_Total = Democrat + Republican+ Other2+`Independent Party`+ Nonaffiliated)%>%
+  select(Date,House_District, Democrat, Republican, Independent=`Independent Party`, Nonaffiliated,Other=Other2,District_Total)%>%
+  drop_na()
+
+```
+
+This chunk was the bane of my existence for most of this project. As the dataset only contains the state house district, I needed to create a new column that was the Senate District. Thankfully, Oregon's senate districts are simply two house districts. For any data scientists looking at this post, yes, I could have done this with a loop or two. I will admit that I did not out of complete laziness. If you want to know why these five ditrcists were chosen, check out my blog post on the growth of non-affiliated voters in Oregon. 
+
+```{r Creating Senate Districts, message=FALSE}
+senate_clean <- voters_clean
+senate_clean$Senate_District <- "None"
+senate_clean$Senate_District[senate_clean$House_District == "SR13"] <- "SS07"
+senate_clean$Senate_District[senate_clean$House_District == "SR14"] <- "SS07"
+senate_clean$Senate_District[senate_clean$House_District == "SR15"] <- "SS08"
+senate_clean$Senate_District[senate_clean$House_District == "SR16"] <- "SS08"
+senate_clean$Senate_District[senate_clean$House_District == "SR19"] <- "SS10"
+senate_clean$Senate_District[senate_clean$House_District == "SR20"] <- "SS10"
+senate_clean$Senate_District[senate_clean$House_District == "SR45"] <- "SS23"
+senate_clean$Senate_District[senate_clean$House_District == "SR46"] <- "SS23"
+senate_clean$Senate_District[senate_clean$House_District == "SR59"] <- "SS30"
+senate_clean$Senate_District[senate_clean$House_District == "SR60"] <- "SS30"
+senate_clean<-senate_clean%>%
+  filter(Senate_District != "None")%>%
+  select(-c(House_District))
+```
+
+After creating the Senate District feature, I could then aggregate by it and create the final Senate dataset that I could pull apart to create individual district time series datasets. 
+
+```{r Cleaning Senate Data, message=FALSE}
+
+senate_clean2<-senate_clean%>%
+  group_by(Date,Senate_District)%>%
+  mutate(Republican = sum(Republican), 
+         Democrat = sum(Democrat),
+         Other = sum(Other),
+         Independent = sum(Independent),
+         Nonaffiliated =  sum(Nonaffiliated))
+  
+
+senate_clean2<-senate_clean2%>%
+  mutate(District_Total = Democrat + Republican+ Other + Independent+ Nonaffiliated)%>%
+  drop_na()%>%
+  select(Date,Senate_District, Democrat, Republican, Independent, Nonaffiliated,Other,District_Total)%>%
+  unique()
+
+```
+
+Finally, I broke down and created a for loop to go through and pull out all the data for each district and create the five individual datasets. After this step, I could now actually forecast voter registration for the 2022 Midterm election.
+
+```{r Creating Forecasting Datasets, message=FALSE}
+
+senate_districts_list <- senate_clean2%>% 
+  group_by(Senate_District)%>% 
+  select(Senate_District)%>%
+  unique()%>%
+  arrange(Senate_District)
+senate_districts_list<-apply(senate_districts_list,1,as.list)
+for (val in senate_districts_list) {
+temp <- senate_clean2%>%
+  filter(Senate_District == val)%>%
+  filter(Date != ymd("2017-11-14"))%>%
+  mutate(Date = yearmonth(floor_date(as_date(Date), "month")))
+name <- paste("District", toString(val), sep = "_")
+assign(name,temp)
+}
+
+rm(temp,val,name,count,senate_districts_list)
+
+```
+
+# Forecasting
+
+In a previous file, I tested several different time series models including ETS, ARIMA and simple Linear models. Across several of the datasets, I found that ARIMA was most accurate on random samples. As the data is stationary, most of the models were forecasting Naive or Drift models which were accurate, but they weren't capturing any of the error in the data. Overall, the models were incredibly close and the accuracy came down to the size of the window. After looking at the model's accuracy and the relatively long window of 17 months I was forecasting, I ended up choosing the ARIMA model. After choosing that, it just came down to applying the model on each of the parties within each district. On this, I did look into grouped time series methods, however, as I was forecasting the simple number of voters for each party, non-grouped methods are effective. I have also only included the 7th district as the other four districts' code are identical. 
+
+```{r District 7 Final, message=FALSE}
+TS<-District_SS07%>%
+  as_tsibble()
+
+Democrat<-TS %>% 
+  model(ARIMA(Democrat)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Democrat=.mean)%>%
+  mutate(Democrat=round(Democrat))
+
+Republican<-TS %>% 
+  model(ARIMA(Republican)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Republican=.mean)%>%
+  mutate(Republican=round(Republican))
+
+Independent<-TS %>% 
+  model(ARIMA(Independent)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Independent=.mean)%>%
+  mutate(Independent=round(Independent))
+
+Nonaffiliated<-TS %>% 
+  model(ARIMA(Nonaffiliated)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Nonaffiliated=.mean)%>%
+  mutate(Nonaffiliated=round(Nonaffiliated))
+
+Other<-TS %>% 
+  model(ARIMA(Other)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Other=.mean)%>%
+  mutate(Other=round(Other))
+
+District_SS07_Forecast<-left_join(Democrat,Republican)%>%
+  left_join(Independent)%>%
+  left_join(Nonaffiliated)%>%
+  left_join(Other)
+
+District_SS07_Forecast<-District_SS07_Forecast%>%
+  mutate(Senate_District="SS07",District_Total=Democrat+Republican+Independent+Nonaffiliated+Other)
+
+District_SS07_Complete<-full_join(District_SS07,District_SS07_Forecast)
+
+rm(Democrat,Republican,Independent,Nonaffiliated,Other,TS)
+
+```
+
+```{r District 8 Final, include==FALSE}
+TS<-District_SS08%>%
+  as_tsibble()
+
+Democrat<-TS %>% 
+  model(ARIMA(Democrat)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Democrat=.mean)%>%
+  mutate(Democrat=round(Democrat))
+
+Republican<-TS %>% 
+  model(ARIMA(Republican)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Republican=.mean)%>%
+  mutate(Republican=round(Republican))
+
+Independent<-TS %>% 
+  model(ARIMA(Independent)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Independent=.mean)%>%
+  mutate(Independent=round(Independent))
+
+Nonaffiliated<-TS %>% 
+  model(ARIMA(Nonaffiliated)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Nonaffiliated=.mean)%>%
+  mutate(Nonaffiliated=round(Nonaffiliated))
+
+Other<-TS %>% 
+  model(ARIMA(Other)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Other=.mean)%>%
+  mutate(Other=round(Other))
+
+District_SS08_Forecast<-left_join(Democrat,Republican)%>%
+  left_join(Independent)%>%
+  left_join(Nonaffiliated)%>%
+  left_join(Other)
+
+District_SS08_Forecast<-District_SS08_Forecast%>%
+  mutate(Senate_District="SS08",District_Total=Democrat+Republican+Independent+Nonaffiliated+Other)
+
+District_SS08_Complete<-full_join(District_SS08,District_SS08_Forecast)
+
+rm(Democrat,Republican,Independent,Nonaffiliated,Other,TS)
+
+```
+
+```{r District 10 Final, include==FALSE}
+TS<-District_SS10%>%
+  as_tsibble()
+
+Democrat<-TS %>% 
+  model(ARIMA(Democrat)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Democrat=.mean)%>%
+  mutate(Democrat=round(Democrat))
+
+Republican<-TS %>% 
+  model(ARIMA(Republican)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Republican=.mean)%>%
+  mutate(Republican=round(Republican))
+
+Independent<-TS %>% 
+  model(ARIMA(Independent)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Independent=.mean)%>%
+  mutate(Independent=round(Independent))
+
+Nonaffiliated<-TS %>% 
+  model(ARIMA(Nonaffiliated)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Nonaffiliated=.mean)%>%
+  mutate(Nonaffiliated=round(Nonaffiliated))
+
+Other<-TS %>% 
+  model(ARIMA(Other)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Other=.mean)%>%
+  mutate(Other=round(Other))
+
+District_SS10_Forecast<-left_join(Democrat,Republican)%>%
+  left_join(Independent)%>%
+  left_join(Nonaffiliated)%>%
+  left_join(Other)
+
+District_SS10_Forecast<-District_SS10_Forecast%>%
+  mutate(Senate_District="SS10",District_Total=Democrat+Republican+Independent+Nonaffiliated+Other)
+
+District_SS10_Complete<-full_join(District_SS10,District_SS10_Forecast)
+
+rm(Democrat,Republican,Independent,Nonaffiliated,Other,TS)
+
+```
+
+```{r District 23 Final, include==FALSE}
+TS<-District_SS23%>%
+  as_tsibble()
+
+Democrat<-TS %>% 
+  model(ARIMA(Democrat)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Democrat=.mean)%>%
+  mutate(Democrat=round(Democrat))
+
+Republican<-TS %>% 
+  model(ARIMA(Republican)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Republican=.mean)%>%
+  mutate(Republican=round(Republican))
+
+Independent<-TS %>% 
+  model(ARIMA(Independent)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Independent=.mean)%>%
+  mutate(Independent=round(Independent))
+
+Nonaffiliated<-TS %>% 
+  model(ARIMA(Nonaffiliated)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Nonaffiliated=.mean)%>%
+  mutate(Nonaffiliated=round(Nonaffiliated))
+
+Other<-TS %>% 
+  model(ARIMA(Other)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Other=.mean)%>%
+  mutate(Other=round(Other))
+
+District_SS23_Forecast<-left_join(Democrat,Republican)%>%
+  left_join(Independent)%>%
+  left_join(Nonaffiliated)%>%
+  left_join(Other)
+
+District_SS23_Forecast<-District_SS23_Forecast%>%
+  mutate(Senate_District="SS23",District_Total=Democrat+Republican+Independent+Nonaffiliated+Other)
+
+District_SS23_Complete<-full_join(District_SS23,District_SS23_Forecast)
+
+rm(Democrat,Republican,Independent,Nonaffiliated,Other,TS)
+
+```
+
+```{r District 30 Final, include==FALSE}
+TS<-District_SS30%>%
+  as_tsibble()
+
+Democrat<-TS %>% 
+  model(ARIMA(Democrat)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Democrat=.mean)%>%
+  mutate(Democrat=round(Democrat))
+
+Republican<-TS %>% 
+  model(ARIMA(Republican)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Republican=.mean)%>%
+  mutate(Republican=round(Republican))
+
+Independent<-TS %>% 
+  model(ARIMA(Independent)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Independent=.mean)%>%
+  mutate(Independent=round(Independent))
+
+Nonaffiliated<-TS %>% 
+  model(ARIMA(Nonaffiliated)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Nonaffiliated=.mean)%>%
+  mutate(Nonaffiliated=round(Nonaffiliated))
+
+Other<-TS %>% 
+  model(ARIMA(Other)) %>% 
+  forecast(h= 17)%>%
+  as.tibble()%>%
+  select(Date,Other=.mean)%>%
+  mutate(Other=round(Other))
+
+District_SS30_Forecast<-left_join(Democrat,Republican)%>%
+  left_join(Independent)%>%
+  left_join(Nonaffiliated)%>%
+  left_join(Other)
+
+District_SS30_Forecast<-District_SS30_Forecast%>%
+  mutate(Senate_District="SS30",District_Total=Democrat+Republican+Independent+Nonaffiliated+Other)
+
+District_SS30_Complete<-full_join(District_SS30,District_SS30_Forecast)
+
+rm(Democrat,Republican,Independent,Nonaffiliated,Other,TS)
+
+```
+
+
+```{r Creating Percentages, inlcude = FALSE}
+
+District_SS07_Complete<-District_SS07_Complete%>%
+  mutate(Republican_Per = round((Republican/District_Total)*100,1),
+         Democrat_Per = round((Democrat/District_Total)*100,1),
+         Other_Per = round((Other/District_Total)*100,1),
+         Independent_Per = round((Independent/District_Total)*100,1),
+         Nonaffiliated_Per =  round((Nonaffiliated/District_Total)*100,1))
+
+District_SS08_Complete<-District_SS08_Complete%>%
+  mutate(Republican_Per = round((Republican/District_Total)*100,1),
+         Democrat_Per = round((Democrat/District_Total)*100,1),
+         Other_Per = round((Other/District_Total)*100,1),
+         Independent_Per = round((Independent/District_Total)*100,1),
+         Nonaffiliated_Per =  round((Nonaffiliated/District_Total)*100,1))
+
+District_SS10_Complete<-District_SS10_Complete%>%
+  mutate(Republican_Per = round((Republican/District_Total)*100,1),
+         Democrat_Per = round((Democrat/District_Total)*100,1),
+         Other_Per = round((Other/District_Total)*100,1),
+         Independent_Per = round((Independent/District_Total)*100,1),
+         Nonaffiliated_Per =  round((Nonaffiliated/District_Total)*100,1))
+
+District_SS23_Complete<-District_SS23_Complete%>%
+  mutate(Republican_Per = round((Republican/District_Total)*100,1),
+         Democrat_Per = round((Democrat/District_Total)*100,1),
+         Other_Per = round((Other/District_Total)*100,1),
+         Independent_Per = round((Independent/District_Total)*100,1),
+         Nonaffiliated_Per =  round((Nonaffiliated/District_Total)*100,1))
+
+
+District_SS30_Complete<-District_SS30_Complete%>%
+  mutate(Republican_Per = round((Republican/District_Total)*100,1),
+         Democrat_Per = round((Democrat/District_Total)*100,1),
+         Other_Per = round((Other/District_Total)*100,1),
+         Independent_Per = round((Independent/District_Total)*100,1),
+         Nonaffiliated_Per =  round((Nonaffiliated/District_Total)*100,1))
+
+
+District_SS07_Election_Day<-District_SS07_Complete%>%
+  filter(Date==yearmonth(floor_date(ymd("2022-11-01"), "month")))
+
+District_SS08_Election_Day<-District_SS08_Complete%>%
+  filter(Date==yearmonth(floor_date(ymd("2022-11-01"), "month")))
+
+District_SS10_Election_Day<-District_SS10_Complete%>%
+  filter(Date==yearmonth(floor_date(ymd("2022-11-01"), "month")))
+
+District_SS23_Election_Day<-District_SS23_Complete%>%
+  filter(Date==yearmonth(floor_date(ymd("2022-11-01"), "month")))
+
+District_SS30_Election_Day<-District_SS30_Complete%>%
+  filter(Date==yearmonth(floor_date(ymd("2022-11-01"), "month")))
+
+Election_2022<-full_join(District_SS07_Election_Day,District_SS08_Election_Day)%>%
+  full_join(District_SS10_Election_Day)%>%
+  full_join(District_SS23_Election_Day)%>%
+  full_join(District_SS30_Election_Day)
+
+
+
+```
+### Here is what the forecasts look like
+
+```{r Senate District 7 Outcome, echo=FALSE}
+
+start<-yearmonth(floor_date(ymd("2021-06-01"), "month"))
+
+end<-yearmonth(floor_date(ymd("2022-11-01"), "month"))
+
+District_SS07_Complete%>%
+  as.tibble()%>%
+  select(Date,Democrat=Democrat_Per,Republican=Republican_Per,Indpendent=Independent_Per,`Non-Affiliated`=Nonaffiliated_Per,`Other Third Parties`=Other_Per)%>%
+  pivot_longer(!Date,names_to = "Party",values_to = "Percent")%>%
+ggplot(aes(y=Percent,x=Date,color=Party)) + 
+  geom_line()+
+   geom_rect(
+    aes(xmin = start, xmax = end, color = "Forecast"), 
+    ymin = -Inf, ymax = Inf, alpha = 0.005) + 
+  ggtitle("Senate District 7:                                            Forecast")+
+  theme_minimal()
+
+```
+
+```{r Senate Districy 8 Outcome, echo=FALSE}
+District_SS08_Complete%>%
+  as.tibble()%>%
+  select(Date,Democrat=Democrat_Per,Republican=Republican_Per,Indpendent=Independent_Per,`Non-Affiliated`=Nonaffiliated_Per,`Other Third Parties`=Other_Per)%>%
+  pivot_longer(!Date,names_to = "Party",values_to = "Percent")%>%
+ggplot(aes(y=Percent,x=Date,color=Party)) + 
+  geom_line()+
+   geom_rect(
+    aes(xmin = start, xmax = end, color = "Forecast"), 
+    ymin = -Inf, ymax = Inf, alpha = 0.005) + 
+  ggtitle("Senate District 8:                                            Forecast")+
+  theme_minimal()
+```
+
+```{r Senate District 10 Outcome, echo=FALSE}
+District_SS10_Complete%>%
+  as.tibble()%>%
+  select(Date,Democrat=Democrat_Per,Republican=Republican_Per,Indpendent=Independent_Per,`Non-Affiliated`=Nonaffiliated_Per,`Other Third Parties`=Other_Per)%>%
+  pivot_longer(!Date,names_to = "Party",values_to = "Percent")%>%
+ggplot(aes(y=Percent,x=Date,color=Party)) + 
+  geom_line()+
+   geom_rect(
+    aes(xmin = start, xmax = end, color = "Forecast"), 
+    ymin = -Inf, ymax = Inf, alpha = 0.005) + 
+  ggtitle("Senate District 10:                                            Forecast")+
+  theme_minimal()
+```
+
+
+```{r Senate District 23 Outcome, echo=FALSE}
+District_SS23_Complete%>%
+  as.tibble()%>%
+  select(Date,Democrat=Democrat_Per,Republican=Republican_Per,Indpendent=Independent_Per,`Non-Affiliated`=Nonaffiliated_Per,`Other Third Parties`=Other_Per)%>%
+  pivot_longer(!Date,names_to = "Party",values_to = "Percent")%>%
+ggplot(aes(y=Percent,x=Date,color=Party)) + 
+  geom_line()+
+   geom_rect(
+    aes(xmin = start, xmax = end, color = "Forecast"), 
+    ymin = -Inf, ymax = Inf, alpha = 0.005) + 
+  ggtitle("Senate District 23:                                            Forecast")+
+  theme_minimal()
+```
+
+
+```{r Senate District 30 Outcome, echo=FALSE}
+District_SS30_Complete%>%
+  as.tibble()%>%
+  select(Date,Democrat=Democrat_Per,Republican=Republican_Per,Indpendent=Independent_Per,`Non-Affiliated`=Nonaffiliated_Per,`Other Third Parties`=Other_Per)%>%
+  pivot_longer(!Date,names_to = "Party",values_to = "Percent")%>%
+ggplot(aes(y=Percent,x=Date,color=Party)) + 
+  geom_line()+
+   geom_rect(
+    aes(xmin = start, xmax = end, color = "Forecast"), 
+    ymin = -Inf, ymax = Inf, alpha = 0.005) + 
+  ggtitle("Senate District 30:                                            Forecast")+
+  theme_minimal()
+```

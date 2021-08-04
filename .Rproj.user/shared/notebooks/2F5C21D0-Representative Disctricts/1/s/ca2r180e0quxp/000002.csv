@@ -1,0 +1,16 @@
+"0","```r
+Oregon_Senate_race<-Oregon_Senate_race_acs%>%
+  pivot_wider(id_cols = c(\"GEOID\", \"NAME\"),names_from = \"variable\", values_from = estimate)%>%
+  select(NAME,total_pop= B02001_001, total_white= B02001_002,total_latinx= B03001_003,total_black= B02001_003, total_asian=B02001_005)
+
+Oregon_Senate_race<-Oregon_Senate_race%>%
+  mutate(white_per=total_white/total_pop,latinx_per=total_latinx/total_pop,black_per=total_black/total_pop, asian_per=total_asian/total_pop)%>%
+  mutate(median_total_pop=median(total_pop), median_state_white= median(white_per), median_state_latinx=median(latinx_per),median_state_black= median(black_per),median_state_asian=median(asian_per))%>%
+  mutate(district_white_diff=white_per-median_state_white,district_latinx_diff= latinx_per-median_state_latinx, district_black_diff=black_per-median_state_black, disctrict_asian_diff=asian_per-median_state_asian)%>%
+  mutate(total_error=(abs(district_white_diff)+abs(district_latinx_diff)+abs(district_black_diff)+abs(disctrict_asian_diff)))%>%
+  arrange(total_error)%>%
+  mutate(rank=rank(total_error))
+
+Race_rank<-Oregon_Senate_race%>%
+  select(NAME,rank_race=rank)
+```"

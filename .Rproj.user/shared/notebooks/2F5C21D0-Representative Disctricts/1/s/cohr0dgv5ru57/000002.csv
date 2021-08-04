@@ -1,0 +1,5 @@
+"0","```r
+Rankings<-left_join(House_rank,Race_rank)
+```"
+"1","Error in left_join(House_rank, Race_rank) : object 'House_rank' not found
+"
