@@ -113,7 +113,7 @@ ggplot(statewide,aes(x=Date))+
   
 ### How will NAV registration look in 2022?
 
-  To begin to investigate what is driving NAV growth and the political effect it will have on the state, five distinct Senate districts in this study highlight the diversity of Oregon politics and its many facets, shedding light on what NAVs look like in Oregon. Do keep in mind that these forecasts are dependent on these districts remaining the same after redistricting later this year -- the point of forecasting is to get a better sense of the state a whole and not to determine the specific makeup of each district. 
+  To begin to investigate what is driving NAV growth and the political effect it will have on the state, five distinct Senate districts in this study highlight the diversity of Oregon politics and its many facets, shedding light on what NAVs look like in Oregon. Do keep in mind that these forecasts are dependent on these districts remaining the same after redistricting later this year -- the point of forecasting is to get a better sense of the state a whole and not to determine the specific makeup of each district.
   
 #### The 23rd State Senate District
 
@@ -147,7 +147,7 @@ ggplot(statewide,aes(x=Date))+
   
   What is causing this growth needs further investigation. But it is still super intersting to look at that growth. 
   
-```{r gif, echo=FALSE}
+```{r gif, echo=FALSE, out.height="150%",out.width="150%"}
 
 knitr::include_graphics("map_anim.gif")
 ```
