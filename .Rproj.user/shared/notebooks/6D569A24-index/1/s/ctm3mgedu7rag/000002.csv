@@ -1,0 +1,20 @@
+"0","library(tidycensus)"
+"0","library(tidyverse)"
+"0","library(sf)"
+"0","library(dplyr)"
+"0","library(lubridate)"
+"0","library(caret)"
+"0","library(dplyr)"
+"0",""
+"0","voters<-read_csv(""G:/My Drive/Documents/Willamette/Graduate/DATA 510 Capstone/Voter Registration.csv"")"
+"1","[1m[1mRows: [1m[22m[34m[34m73470[34m[39m [1m[1mColumns: [1m[22m[34m[34m8[34m[39m
+"
+"1","[36m--[39m [1m[1mColumn specification[1m[22m [36m------------------------------------------------------------------------------------------------------[39m
+[1mDelimiter:[22m "",""
+[31mchr[39m (7): COUNTY, HD_CODE, HD_NAME, CD_CODE, CD_NAME, PARTY, SYSDATE
+[32mdbl[39m (1): COUNT(V.ID)
+"
+"1","
+[36mi[39m Use [38;5;251m[48;5;235m[38;5;251m[48;5;235m`spec()`[48;5;235m[38;5;251m[49m[39m to retrieve the full column specification for this data.
+[36mi[39m Specify the column types or set [38;5;251m[48;5;235m[38;5;251m[48;5;235m`show_col_types = FALSE`[48;5;235m[38;5;251m[49m[39m to quiet this message.
+"

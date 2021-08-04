@@ -1,0 +1,6 @@
+"0","Oregon_Senate_race<-Oregon_Senate_race_acs%>%"
+"0","  pivot_wider(id_cols = c(""GEOID"", ""NAME""),names_from = ""variable"", values_from = estimate)%>%"
+"0","  dplyr::select(NAME,total_pop= B02001_001, total_white= B02001_002,total_latinx= B03001_003,total_black= B02001_003, total_asian=B02001_005)"
+"0",""
+"0","Oregon_Senate_race<-Oregon_Senate_race%>%"
+"0","  mutate(white_per=total_white/total_pop,latinx_per=total_latinx/total_pop,black_per=total_black/total_pop, asian_per=total_asian/total_pop)"
