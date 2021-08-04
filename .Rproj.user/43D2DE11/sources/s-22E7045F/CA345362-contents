@@ -33,7 +33,7 @@ voters<-read_csv("G:/My Drive/Documents/Willamette/Graduate/DATA 510 Capstone/Vo
 
 ```
 
-### Cleaning the Data and Creating the Senate Datasets
+# Cleaning the Data and Creating the Senate Datasets
 
 You can find the most up to date Oregon voter registration data here:
 https://data.oregon.gov/Administrative/Voter-Registration-Change-Over-Time/2ppg-zt4s
@@ -131,7 +131,7 @@ rm(temp,val,name,count,senate_districts_list)
 
 ```
 
-### Forecasting
+# Forecasting
 
 In a previous file, I tested several different time series models including ETS, ARIMA and simple Linear models. Across several of the datasets, I found that ARIMA was most accurate on random samples. As the data is stationary, most of the models were forecasting Naive or Drift models which were accurate, but they weren't capturing any of the error in the data. Overall, the models were incredibly close and the accuracy came down to the size of the window. After looking at the model's accuracy and the relatively long window of 17 months I was forecasting, I ended up choosing the ARIMA model. After choosing that, it just came down to applying the model on each of the parties within each district. On this, I did look into grouped time series methods, however, as I was forecasting the simple number of voters for each party, non-grouped methods are effective. I have also only included the 7th district as the other four districts' code are identical. 
 
@@ -463,7 +463,6 @@ Election_2022<-full_join(District_SS07_Election_Day,District_SS08_Election_Day)%
 
 
 ```
-
 ### Here is what the forecasts look like
 
 ```{r Senate District 7 Outcome, echo=FALSE}

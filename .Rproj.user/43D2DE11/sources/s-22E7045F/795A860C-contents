@@ -143,7 +143,7 @@ ggplot(statewide,aes(x=Date))+
   
   While a district that is rural is more likely to have experienced a more rapid growth of NAVs, rural districts are also much more likely to be Republican majority districts. When percent of Republicans in district was considered, it was the most highly correlated feature with the growth of NAVs. However, both these are simple correlations and there is the potential that high correlations is due to multicollinearity.  
   
-  What these two correlations point to is that growth of nonaffiliated voters is caused by apathetic voters. As Oregon has long been controlled by the Democratic Party, voters in rural areas are more likely to believe their vote does not matter or cannot instigate change, another finding in my research was that NAVs were more likely to be under the age of 49. What this points to is that the average NAV is likely a younger voter who lives in more rural parts of the state.
+  What these two correlations point to is that growth of non-affiliated voters is caused by apathetic voters. As Oregon has long been controlled by the Democratic Party, voters in rural areas are more likely to believe their vote does not matter or cannot instigate change, another finding in my research was that NAVs were more likely to be under the age of 49. What this points to is that the average NAV is likely a younger voter who lives in more rural parts of the state.
   
   What is causing this growth needs further investigation. 
   

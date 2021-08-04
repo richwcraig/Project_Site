@@ -1,0 +1,5 @@
+"0","ggplot(Senate_Model,aes(x=asian_per+latinx_per+black_per,y=Growth))+"
+"0","  geom_point()+"
+"0","  geom_smooth(method=""lm"")"
+"2","`geom_smooth()` using formula 'y ~ x'
+"

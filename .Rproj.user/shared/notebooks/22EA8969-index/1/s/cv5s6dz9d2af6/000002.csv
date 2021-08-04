@@ -1,0 +1,10 @@
+"0",""
+"0","Senate_Model<-left_join(Senate_Demographics,senate_outcome)%>%"
+"0","  dplyr::select(District,pop_density,house_density,white_per,latinx_per,black_per,asian_per,Growth)"
+"1","Joining, by = ""District""
+"
+"0","ggplot(Senate_Model,aes(x=pop_density,y=Growth))+"
+"0","  geom_point()+"
+"0","  geom_smooth(method=""lm"")"
+"2","`geom_smooth()` using formula 'y ~ x'
+"
