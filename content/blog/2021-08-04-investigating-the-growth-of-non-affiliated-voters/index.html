@@ -38,8 +38,6 @@ Oregon_Senate_housing_acs&lt;- get_acs(geography = &quot;state legislative distr
   |                                                                            
   |=====                                                                 |   7%
   |                                                                            
-  |==========                                                            |  14%
-  |                                                                            
   |===========                                                           |  15%
   |                                                                            
   |================                                                      |  23%
@@ -48,7 +46,11 @@ Oregon_Senate_housing_acs&lt;- get_acs(geography = &quot;state legislative distr
   |                                                                            
   |=========================                                             |  35%
   |                                                                            
+  |==============================                                        |  43%
+  |                                                                            
   |================================                                      |  46%
+  |                                                                            
+  |======================================                                |  54%
   |                                                                            
   |========================================                              |  57%
   |                                                                            
@@ -105,7 +107,7 @@ voters_clean&lt;-voters_clean%&gt;%
          District_Total = Democrat + Republican+ Other2+`Independent Party`+ Nonaffiliated)%&gt;%
   dplyr::select(Date,House_District, Democrat, Republican, Independent=`Independent Party`, Nonaffiliated,Other=Other2,District_Total)%&gt;%
   drop_na()</code></pre>
-<p>The final step is creating the dependent variable that we will be modelling. This variable is the growth of non-affiliated voters over the last five years.</p>
+<p>The final step is creating the dependent variable that I will be modelling. This variable is the percent growth of non-affiliated voters over the last five years.</p>
 <pre class="r"><code>senate_clean2&lt;-senate_clean%&gt;%
   group_by(Date,Senate_District)%&gt;%
   mutate(Republican = sum(Republican), 
@@ -201,11 +203,11 @@ fit</code></pre>
 ## 
 ## Pre-processing: scaled (2), centered (2) 
 ## Resampling: Cross-Validated (5 fold) 
-## Summary of sample sizes: 24, 24, 23, 24, 25 
+## Summary of sample sizes: 23, 24, 25, 23, 25 
 ## Resampling results:
 ## 
 ##   RMSE        Rsquared   MAE       
-##   0.05973709  0.4527069  0.05014196
+##   0.05721613  0.5122875  0.04857792
 ## 
 ## Tuning parameter &#39;intercept&#39; was held constant at a value of TRUE</code></pre>
 <pre class="r"><code>summary(fit)</code></pre>

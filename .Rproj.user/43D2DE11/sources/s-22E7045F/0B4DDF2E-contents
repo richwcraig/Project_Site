@@ -96,7 +96,7 @@ ggplot(statewide,aes(x=Date))+
   geom_line(aes(y=Republican_Per))+
   ylim(20,40)+
   geom_line(aes(y=Nonaffiliated_Per),color="blue")+
-  labs(title="Growth of Nonaffiliated voters following the Motor Voter Act")+
+  labs(title="Growth of Non-affiliated Voters following the Motor Voter Act")+
   ylab("Percent of Party")+
   theme(panel.background = element_blank(),
         panel.border = element_blank(),

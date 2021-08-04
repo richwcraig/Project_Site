@@ -101,7 +101,7 @@ voters_clean<-voters_clean%>%
 
 ```
 
-The final step is creating the dependent variable that we will be modelling. This variable is the growth of non-affiliated voters over the last five years.
+The final step is creating the dependent variable that I will be modelling. This variable is the percent growth of non-affiliated voters over the last five years.
 
 ```{r Creating Senate Districts, message=FALSE, include=FALSE}
 senate_clean <- voters_clean
