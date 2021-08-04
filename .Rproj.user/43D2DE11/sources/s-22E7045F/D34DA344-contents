@@ -402,7 +402,7 @@ rm(Democrat,Republican,Independent,Nonaffiliated,Other,TS)
 ```
 
 
-```{r Creating Percentages, inlcude=FALSE,message=FALSE}
+```{r Creating Percentages, include=FALSE}
 
 District_SS07_Complete<-District_SS07_Complete%>%
   mutate(Republican_Per = round((Republican/District_Total)*100,1),

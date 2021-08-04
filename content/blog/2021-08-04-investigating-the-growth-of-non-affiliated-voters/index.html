@@ -38,6 +38,8 @@ Oregon_Senate_housing_acs&lt;- get_acs(geography = &quot;state legislative distr
   |                                                                            
   |=====                                                                 |   7%
   |                                                                            
+  |==========                                                            |  14%
+  |                                                                            
   |===========                                                           |  15%
   |                                                                            
   |================                                                      |  23%
@@ -46,11 +48,7 @@ Oregon_Senate_housing_acs&lt;- get_acs(geography = &quot;state legislative distr
   |                                                                            
   |=========================                                             |  35%
   |                                                                            
-  |==============================                                        |  43%
-  |                                                                            
   |================================                                      |  46%
-  |                                                                            
-  |======================================                                |  54%
   |                                                                            
   |========================================                              |  57%
   |                                                                            
@@ -203,11 +201,11 @@ fit</code></pre>
 ## 
 ## Pre-processing: scaled (2), centered (2) 
 ## Resampling: Cross-Validated (5 fold) 
-## Summary of sample sizes: 23, 24, 22, 26, 25 
+## Summary of sample sizes: 24, 24, 23, 24, 25 
 ## Resampling results:
 ## 
 ##   RMSE        Rsquared   MAE       
-##   0.06022034  0.5123369  0.05144664
+##   0.05973709  0.4527069  0.05014196
 ## 
 ## Tuning parameter &#39;intercept&#39; was held constant at a value of TRUE</code></pre>
 <pre class="r"><code>summary(fit)</code></pre>
@@ -230,5 +228,5 @@ fit</code></pre>
 ## Residual standard error: 0.05661 on 27 degrees of freedom
 ## Multiple R-squared:  0.5014, Adjusted R-squared:  0.4645 
 ## F-statistic: 13.58 on 2 and 27 DF,  p-value: 8.309e-05</code></pre>
-<p>While we do find that density is a good predictor of growth over the last year, this is in no way saying that it is actually driving that growth. This modelling process was more for my own curiosity and I would not use this model if I was attempting to accurately predict future growth of NAVs. It does begin to shed some light on where NAVs experienced the highest levels of growth.</p>
+<p>While I did find that density is a good predictor of growth over the last year, this is in no way saying that it is actually driving that growth. This modelling process was more for my own curiosity and I would not use this model if I was attempting to accurately predict future growth of NAVs. It does begin to shed some light on where NAVs experienced the highest levels of growth and where the trend could continue.</p>
 </div>

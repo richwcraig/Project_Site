@@ -1,0 +1,262 @@
+---
+title: "Final Graphics"
+author: "Richard Craig"
+date: "7/30/2021"
+output: html_document
+---
+
+```{r Setup, include=FALSE}
+library(tidyverse)
+library(fable)
+library(feasts)
+library(fpp3)
+library(distributional)
+library(tidyverse)
+library(lubridate)
+library(tmap)
+library(tigris)
+library(tidycensus)
+library(leaflet)
+library(maps)
+library(tidycensus)
+library(tidyverse)
+library(sf)
+library(tmap)
+library(leaflet)
+library(leaflet.extras2)
+library(geojsonsf)
+library(Rcpp)
+library(raster)
+library(dplyr)
+library(spData)
+
+voters<-read_csv("G:/My Drive/Documents/Willamette/Graduate/DATA 510 Capstone/Voter Registration.csv")
+```
+
+```{r Cleaning Senate, include=FALSE}
+
+voters_clean<-voters%>%
+    mutate(Date=yearmonth(floor_date(mdy(SYSDATE), "month")),House_District= as.factor(HD_CODE), Count=`COUNT(V.ID)`)%>%
+    dplyr::select(Date,House_District,PARTY,Count)%>%
+    group_by(Date,House_District,PARTY)%>%
+    mutate(Total_For_Party=sum(Count))
+
+ voters_clean<-voters_clean%>%
+   dplyr::select(-Count)%>%
+   unique()%>%
+   arrange(Date)
+
+
+voters_clean<-voters_clean%>%
+  pivot_wider(id_cols = c("Date", "House_District"),names_from = PARTY, values_from = Total_For_Party)
+
+voters_clean$`Americans Elect`[is.na(voters_clean$`Americans Elect`)] <- 0
+voters_clean$`Non Partisan`[is.na(voters_clean$`Non Partisan`)] <- 0
+
+voters_clean<-voters_clean%>%
+  mutate(Other2=Other+`Working Families Party of Oregon`+Progressive+`Pacific Green`+Constitution+Libertarian+Other+`Americans Elect`+`Non Partisan`,
+         District_Total = Democrat + Republican+ Other2+`Independent Party`+ Nonaffiliated)%>%
+  dplyr::select(Date,House_District, Democrat, Republican, Independent=`Independent Party`, Nonaffiliated,Other=Other2,District_Total)%>%
+  drop_na()
+
+```
+
+
+
+```{r Statewide Graphs, include=FALSE}
+
+statewide<-voters_clean%>%
+  group_by(Date)%>%
+  mutate(Democrat=sum(Democrat), Republican=sum(Republican),Independent=sum(Independent),Other=sum(Other), Nonaffiliated=sum(Nonaffiliated))%>%
+  dplyr::select(Date, Democrat,Republican,Independent,Other,Nonaffiliated)%>%
+  unique()%>%
+  mutate(Total=(Democrat+Republican+Other+Independent+Nonaffiliated),
+         Republican_Per = round((Republican/Total)*100,1),
+         Democrat_Per = round((Democrat/Total)*100,1),
+         Other_Per = round((Other/Total)*100,1),
+         Independent_Per = round((Independent/Total)*100,1),
+         Nonaffiliated_Per =  round((Nonaffiliated/Total)*100,1))
+
+ggplot(statewide,aes(x=Date))+
+  geom_line(aes(y=Democrat_Per))+
+  geom_line(aes(y=Republican_Per))+
+  geom_line(aes(y=Independent_Per))+
+  geom_line(aes(y=Other_Per))+
+  geom_line(aes(y=Nonaffiliated_Per, color='red'))+
+  labs(title="Growth of Nonaffiliated voters following the Motor Voter Act")
+
+```
+
+```{r Creating Senate Districts, include=FALSE}
+senate_clean <- voters_clean
+senate_clean$Senate_District <- "None"
+senate_clean$Senate_District[senate_clean$House_District == "SR01"] <- "State Senate District 1 "
+senate_clean$Senate_District[senate_clean$House_District == "SR02"] <- "State Senate District 1 "
+senate_clean$Senate_District[senate_clean$House_District == "SR03"] <- "State Senate District 2 "
+senate_clean$Senate_District[senate_clean$House_District == "SR04"] <- "State Senate District 2 "
+senate_clean$Senate_District[senate_clean$House_District == "SR05"] <- "State Senate District 3 "
+senate_clean$Senate_District[senate_clean$House_District == "SR06"] <- "State Senate District 3 "
+senate_clean$Senate_District[senate_clean$House_District == "SR07"] <- "State Senate District 4 "
+senate_clean$Senate_District[senate_clean$House_District == "SR08"] <- "State Senate District 4 "
+senate_clean$Senate_District[senate_clean$House_District == "SR09"] <- "State Senate District 5 "
+senate_clean$Senate_District[senate_clean$House_District == "SR10"] <- "State Senate District 5 "
+senate_clean$Senate_District[senate_clean$House_District == "SR11"] <- "State Senate District 6 "
+senate_clean$Senate_District[senate_clean$House_District == "SR12"] <- "State Senate District 6 "
+senate_clean$Senate_District[senate_clean$House_District == "SR13"] <- "State Senate District 7 "
+senate_clean$Senate_District[senate_clean$House_District == "SR14"] <- "State Senate District 7 "
+senate_clean$Senate_District[senate_clean$House_District == "SR15"] <- "State Senate District 8 "
+senate_clean$Senate_District[senate_clean$House_District == "SR16"] <- "State Senate District 8 "
+senate_clean$Senate_District[senate_clean$House_District == "SR17"] <- "State Senate District 9 "
+senate_clean$Senate_District[senate_clean$House_District == "SR18"] <- "State Senate District 9 "
+senate_clean$Senate_District[senate_clean$House_District == "SR19"] <- "State Senate District 10"
+senate_clean$Senate_District[senate_clean$House_District == "SR20"] <- "State Senate District 10"
+senate_clean$Senate_District[senate_clean$House_District == "SR21"] <- "State Senate District 11"
+senate_clean$Senate_District[senate_clean$House_District == "SR22"] <- "State Senate District 11"
+senate_clean$Senate_District[senate_clean$House_District == "SR23"] <- "State Senate District 12"
+senate_clean$Senate_District[senate_clean$House_District == "SR24"] <- "State Senate District 12"
+senate_clean$Senate_District[senate_clean$House_District == "SR25"] <- "State Senate District 13"
+senate_clean$Senate_District[senate_clean$House_District == "SR26"] <- "State Senate District 13"
+senate_clean$Senate_District[senate_clean$House_District == "SR27"] <- "State Senate District 14"
+senate_clean$Senate_District[senate_clean$House_District == "SR28"] <- "State Senate District 14"
+senate_clean$Senate_District[senate_clean$House_District == "SR29"] <- "State Senate District 15"
+senate_clean$Senate_District[senate_clean$House_District == "SR30"] <- "State Senate District 15"
+senate_clean$Senate_District[senate_clean$House_District == "SR31"] <- "State Senate District 16"
+senate_clean$Senate_District[senate_clean$House_District == "SR32"] <- "State Senate District 16"
+senate_clean$Senate_District[senate_clean$House_District == "SR33"] <- "State Senate District 17"
+senate_clean$Senate_District[senate_clean$House_District == "SR34"] <- "State Senate District 17"
+senate_clean$Senate_District[senate_clean$House_District == "SR35"] <- "State Senate District 18"
+senate_clean$Senate_District[senate_clean$House_District == "SR36"] <- "State Senate District 18"
+senate_clean$Senate_District[senate_clean$House_District == "SR37"] <- "State Senate District 19"
+senate_clean$Senate_District[senate_clean$House_District == "SR38"] <- "State Senate District 19"
+senate_clean$Senate_District[senate_clean$House_District == "SR39"] <- "State Senate District 20"
+senate_clean$Senate_District[senate_clean$House_District == "SR40"] <- "State Senate District 20"
+senate_clean$Senate_District[senate_clean$House_District == "SR41"] <- "State Senate District 21"
+senate_clean$Senate_District[senate_clean$House_District == "SR42"] <- "State Senate District 21"
+senate_clean$Senate_District[senate_clean$House_District == "SR43"] <- "State Senate District 22"
+senate_clean$Senate_District[senate_clean$House_District == "SR44"] <- "State Senate District 22"
+senate_clean$Senate_District[senate_clean$House_District == "SR45"] <- "State Senate District 23"
+senate_clean$Senate_District[senate_clean$House_District == "SR46"] <- "State Senate District 23"
+senate_clean$Senate_District[senate_clean$House_District == "SR47"] <- "State Senate District 24"
+senate_clean$Senate_District[senate_clean$House_District == "SR48"] <- "State Senate District 24"
+senate_clean$Senate_District[senate_clean$House_District == "SR49"] <- "State Senate District 25"
+senate_clean$Senate_District[senate_clean$House_District == "SR50"] <- "State Senate District 25"
+senate_clean$Senate_District[senate_clean$House_District == "SR51"] <- "State Senate District 26"
+senate_clean$Senate_District[senate_clean$House_District == "SR52"] <- "State Senate District 26"
+senate_clean$Senate_District[senate_clean$House_District == "SR53"] <- "State Senate District 27"
+senate_clean$Senate_District[senate_clean$House_District == "SR54"] <- "State Senate District 27"
+senate_clean$Senate_District[senate_clean$House_District == "SR55"] <- "State Senate District 28"
+senate_clean$Senate_District[senate_clean$House_District == "SR56"] <- "State Senate District 28"
+senate_clean$Senate_District[senate_clean$House_District == "SR57"] <- "State Senate District 29"
+senate_clean$Senate_District[senate_clean$House_District == "SR58"] <- "State Senate District 29"
+senate_clean$Senate_District[senate_clean$House_District == "SR59"] <- "State Senate District 30"
+senate_clean$Senate_District[senate_clean$House_District == "SR60"] <- "State Senate District 30"
+senate_clean<-senate_clean%>%
+  mutate(District=Senate_District)%>%
+  as.tibble()%>%
+  dplyr::select(-c(House_District,Senate_District))
+```
+
+
+```{r Census }
+
+census_vars <- load_variables(2017, "acs5", cache = TRUE)
+
+this.year=2019
+
+senate_boundary<- get_acs(geography = "state legislative district (upper chamber)",
+                                    year=this.year, state = "OR", 
+                                    variables = c("B02001_001"),
+                                    geometry = TRUE)
+
+senate_boundary<-senate_boundary%>%
+  mutate(District=substring(senate_boundary$NAME,1,24))%>%
+  dplyr::select(District,geometry)
+
+```
+
+```{r Creating Mapping}
+
+senate_map<-left_join(senate_clean,senate_boundary)
+
+```
+
+```{r tm maps}
+
+Cutoff <- as.list(c(yearmonth(floor_date(ymd("2016-05-01"), "month")),
+            yearmonth(floor_date(ymd("2016-11-01"), "month")),
+            yearmonth(floor_date(ymd("2017-05-01"), "month")),
+            yearmonth(floor_date(ymd("2017-11-01"), "month")),
+            yearmonth(floor_date(ymd("2018-05-01"), "month")),
+            yearmonth(floor_date(ymd("2018-11-01"), "month")),
+            yearmonth(floor_date(ymd("2019-05-01"), "month")),
+            yearmonth(floor_date(ymd("2019-11-01"), "month")),
+            yearmonth(floor_date(ymd("2020-05-01"), "month")),
+            yearmonth(floor_date(ymd("2020-11-01"), "month")),
+            yearmonth(floor_date(ymd("2021-05-01"), "month"))))
+
+senate_map<-senate_map%>%
+  mutate(`Percent of Non-Affiliated`=Nonaffiliated/District_Total)%>%
+  st_as_sf()
+
+mapping<-senate_map%>%
+   filter(Date==yearmonth(floor_date(ymd("2016-05-01"), "month")) |
+          Date==yearmonth(floor_date(ymd("2016-11-01"), "month")) |
+          Date==yearmonth(floor_date(ymd("2017-05-01"), "month")) |
+          Date==yearmonth(floor_date(ymd("2017-11-01"), "month")) |
+          Date==yearmonth(floor_date(ymd("2018-05-01"), "month")) |
+          Date==yearmonth(floor_date(ymd("2018-11-01"), "month")) |
+          Date==yearmonth(floor_date(ymd("2019-05-01"), "month")) |
+          Date==yearmonth(floor_date(ymd("2019-11-01"), "month")) | 
+          Date==yearmonth(floor_date(ymd("2020-05-01"), "month")) | 
+          Date==yearmonth(floor_date(ymd("2020-11-01"), "month")) |
+          Date==yearmonth(floor_date(ymd("2021-05-01"), "month")))%>%
+   st_as_sf()
+
+map_anim=tm_shape(mapping) +
+  tm_fill(col="Percent of Non-Affiliated") +
+  tm_borders()+
+  tm_layout(frame = FALSE)+
+  tm_style("col_blind")+
+  tm_facets(along = "Date", free.coords = FALSE)
+
+tmap_animation(map_anim, filename = "map_anim.gif", delay = 100)
+
+```
+
+
+
+# ```{r Leaflet}
+# 
+#  Cutoff <- yearmonth(floor_date(ymd("2020-11-01"), "month"))
+# 
+#  mapping1122<-senate_map%>%
+#    filter(Date==Cutoff)%>%
+#    st_as_sf()
+# 
+# ggplot() + 
+#   geom_sf(data = mapping1122, size = .5, color = "black") + 
+#   ggtitle("Oregon Senate Districts") + 
+#   coord_sf()
+# 
+# 
+#  popup<-paste(as.character(substring(mapping1122$Senate_District,6,25)), "<br>",
+#               "Democrats: ", as.character(mapping1122$Democrat), "%","<br>",
+#               "Republicans: ", as.character(mapping1122$Republican),"%", "<br>",
+#               "Independent: ", as.character(mapping1122$Independent),"%", "<br>",
+#               "Nonaffiliated: ", as.character(mapping1122$Nonaffiliated),"%", "<br>",
+#               "Other: ", as.character(mapping1122$Other),"%", "<br>",
+#               "Date: ", as.character(mapping1122$Date))
+# 
+#  pal<-colorNumeric("Greens", domain=0:ceiling(max(mapping1122$Nonaffiliated, na.rm=TRUE)))
+# 
+# 
+#  leaflet()%>%
+#    addProviderTiles("CartoDB.Positron")%>%
+#    addPolygons(data=senate_map,
+#                fillColor= ~pal(senate_boundary$Nonaffiliated_Per),
+#                fillOpacity = .5,
+#                weight =.5,
+#                smoothFactor = 0.2,
+#                popup=popup)%>%
+#    addTimeslider(data = senate_map)
+# ```

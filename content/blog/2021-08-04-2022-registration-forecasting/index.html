@@ -153,62 +153,6 @@ District_SS07_Forecast&lt;-District_SS07_Forecast%&gt;%
 District_SS07_Complete&lt;-full_join(District_SS07,District_SS07_Forecast)
 
 rm(Democrat,Republican,Independent,Nonaffiliated,Other,TS)</code></pre>
-<pre class="r"><code>District_SS07_Complete&lt;-District_SS07_Complete%&gt;%
-  mutate(Republican_Per = round((Republican/District_Total)*100,1),
-         Democrat_Per = round((Democrat/District_Total)*100,1),
-         Other_Per = round((Other/District_Total)*100,1),
-         Independent_Per = round((Independent/District_Total)*100,1),
-         Nonaffiliated_Per =  round((Nonaffiliated/District_Total)*100,1))
-
-District_SS08_Complete&lt;-District_SS08_Complete%&gt;%
-  mutate(Republican_Per = round((Republican/District_Total)*100,1),
-         Democrat_Per = round((Democrat/District_Total)*100,1),
-         Other_Per = round((Other/District_Total)*100,1),
-         Independent_Per = round((Independent/District_Total)*100,1),
-         Nonaffiliated_Per =  round((Nonaffiliated/District_Total)*100,1))
-
-District_SS10_Complete&lt;-District_SS10_Complete%&gt;%
-  mutate(Republican_Per = round((Republican/District_Total)*100,1),
-         Democrat_Per = round((Democrat/District_Total)*100,1),
-         Other_Per = round((Other/District_Total)*100,1),
-         Independent_Per = round((Independent/District_Total)*100,1),
-         Nonaffiliated_Per =  round((Nonaffiliated/District_Total)*100,1))
-
-District_SS23_Complete&lt;-District_SS23_Complete%&gt;%
-  mutate(Republican_Per = round((Republican/District_Total)*100,1),
-         Democrat_Per = round((Democrat/District_Total)*100,1),
-         Other_Per = round((Other/District_Total)*100,1),
-         Independent_Per = round((Independent/District_Total)*100,1),
-         Nonaffiliated_Per =  round((Nonaffiliated/District_Total)*100,1))
-
-
-District_SS30_Complete&lt;-District_SS30_Complete%&gt;%
-  mutate(Republican_Per = round((Republican/District_Total)*100,1),
-         Democrat_Per = round((Democrat/District_Total)*100,1),
-         Other_Per = round((Other/District_Total)*100,1),
-         Independent_Per = round((Independent/District_Total)*100,1),
-         Nonaffiliated_Per =  round((Nonaffiliated/District_Total)*100,1))
-
-
-District_SS07_Election_Day&lt;-District_SS07_Complete%&gt;%
-  filter(Date==yearmonth(floor_date(ymd(&quot;2022-11-01&quot;), &quot;month&quot;)))
-
-District_SS08_Election_Day&lt;-District_SS08_Complete%&gt;%
-  filter(Date==yearmonth(floor_date(ymd(&quot;2022-11-01&quot;), &quot;month&quot;)))
-
-District_SS10_Election_Day&lt;-District_SS10_Complete%&gt;%
-  filter(Date==yearmonth(floor_date(ymd(&quot;2022-11-01&quot;), &quot;month&quot;)))
-
-District_SS23_Election_Day&lt;-District_SS23_Complete%&gt;%
-  filter(Date==yearmonth(floor_date(ymd(&quot;2022-11-01&quot;), &quot;month&quot;)))
-
-District_SS30_Election_Day&lt;-District_SS30_Complete%&gt;%
-  filter(Date==yearmonth(floor_date(ymd(&quot;2022-11-01&quot;), &quot;month&quot;)))
-
-Election_2022&lt;-full_join(District_SS07_Election_Day,District_SS08_Election_Day)%&gt;%
-  full_join(District_SS10_Election_Day)%&gt;%
-  full_join(District_SS23_Election_Day)%&gt;%
-  full_join(District_SS30_Election_Day)</code></pre>
 </div>
 <div id="here-is-what-the-forecasts-look-like" class="section level3">
 <h3>Here is what the forecasts look like</h3>

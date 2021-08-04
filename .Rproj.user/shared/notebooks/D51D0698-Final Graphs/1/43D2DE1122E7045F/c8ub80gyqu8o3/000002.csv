@@ -1,0 +1,19 @@
+"0",""
+"0","census_vars <- load_variables(2017, ""acs5"", cache = TRUE)"
+"0",""
+"0","this.year=2019"
+"0",""
+"0","senate_boundary<- get_acs(geography = ""state legislative district (upper chamber)"","
+"0","                                    year=this.year, state = ""OR"", "
+"0","                                    variables = c(""B02001_001""),"
+"0","                                    geometry = TRUE)"
+"2","Getting data from the 2015-2019 5-year ACS
+"
+"2","Downloading feature geometry from the Census website.  To cache shapefiles for use in future sessions, set `options(tigris_use_cache = TRUE)`.
+"
+"2","Using FIPS code '41' for state 'OR'
+"
+"0","senate_boundary<-senate_boundary%>%"
+"0","  mutate(District=substring(senate_boundary$NAME,1,24))%>%"
+"0","  dplyr::select(District,geometry)"
+"0",""

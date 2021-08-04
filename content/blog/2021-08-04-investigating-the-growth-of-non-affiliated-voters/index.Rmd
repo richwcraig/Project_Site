@@ -318,4 +318,4 @@ fit
 summary(fit)
 ```
 
-While we do find that density is a good predictor of growth over the last year, this is in no way saying that it is actually driving that growth. This modelling process was more for my own curiosity and I would not use this model if I was attempting to accurately predict future growth of NAVs. It does begin to shed some light on where NAVs experienced the highest levels of growth.
+While I did find that density is a good predictor of growth over the last year, this is in no way saying that it is actually driving that growth. This modelling process was more for my own curiosity and I would not use this model if I was attempting to accurately predict future growth of NAVs. It does begin to shed some light on where NAVs experienced the highest levels of growth and where the trend could continue.

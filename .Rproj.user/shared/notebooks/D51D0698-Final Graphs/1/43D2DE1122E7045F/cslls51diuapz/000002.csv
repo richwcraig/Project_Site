@@ -1,0 +1,4 @@
+"0",""
+"0","senate_map<-left_join(senate_clean,senate_boundary)"
+"1","Joining, by = ""District""
+"

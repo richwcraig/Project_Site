@@ -77,7 +77,7 @@ voters_clean<-voters_clean%>%
 ```
 
 
-```{r Statewide Graphs, fig.width=8, fig.height=6,echo=FALSE}
+```{r Statewide Graphs, fig.width=7, fig.height=5,echo=FALSE}
 
 statewide<-voters_clean%>%
   group_by(Date)%>%
