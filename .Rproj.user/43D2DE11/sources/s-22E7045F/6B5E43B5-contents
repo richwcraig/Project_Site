@@ -46,7 +46,7 @@ Oregon_Senate_housing_acs<- get_acs(geography = "state legislative district (upp
 
 ```
 
-This next step is simple cleaning such as reorganizing the data into more the traditional format and also renaming the variables so that they actually mean something. For the demographics data, I calculated the percent of each of the four racial groups and for the housing data, I calculated the housing and population densities. 
+This next step is simple cleaning such as reorganizing the data into more the traditional format and also renaming the variables so that they actually mean something. For the demographics data, I calculated the percent of the total population for each of the four racial groups and for the housing data, I calculated the housing and population densities. 
 
 ```{r Cleaning Demographics Data, message=FALSE}
 Oregon_Senate_race<-Oregon_Senate_race_acs%>%
@@ -167,7 +167,7 @@ senate_clean<-senate_clean%>%
   dplyr::select(-c(House_District))
 ```
 
-The final step is the one of most interest as we are creating the dependent variable that we will be modelling. This variable is the growth of nonaffiliated voters over the last five years. 
+The final step is creating the dependent variable that we will be modelling. This variable is the growth of non-affiliated voters over the last five years. 
 
 ```{r Cleaning Senate Data, message=FALSE}
 
@@ -251,39 +251,44 @@ Senate_Model<-left_join(Senate_Demographics,senate_outcome)%>%
 
 ggplot(Senate_Model,aes(x=pop_density,y=Growth))+
   geom_point()+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  labs(title="Growth of Nonaffiliated voters vs Population Density")
 
 ggplot(Senate_Model,aes(x=house_density,y=Growth))+
   geom_point()+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  labs(title="Growth of Nonaffiliated voters vs Housing Density")
 
 ggplot(Senate_Model,aes(x=((pop_density+house_density)/2),y=Growth))+
   geom_point()+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  labs(title="Growth of Nonaffiliated voters vs Average Density")
 
 ggplot(Senate_Model,aes(x=white_per,y=Growth))+
   geom_point()+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  labs(title="Growth of Nonaffiliated voters vs Percent of White Population")
 
 ggplot(Senate_Model,aes(x=black_per,y=Growth))+
   geom_point()+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  labs(title="Growth of Nonaffiliated voters vs Percent of Black Population")
 
 ggplot(Senate_Model,aes(x=latinx_per,y=Growth))+
   geom_point()+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  labs(title="Growth of Nonaffiliated voters vs Percent of Latinx Population")
 
 ggplot(Senate_Model,aes(x=asian_per,y=Growth))+
   geom_point()+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  labs(title="Growth of Nonaffiliated voters vs Percent of Asian Population")
 
-ggplot(Senate_Model,aes(x=asian_per,y=Growth))+
-  geom_point()+
-  geom_smooth(method="lm")
 
 ggplot(Senate_Model,aes(x=asian_per+latinx_per+black_per,y=Growth))+
   geom_point()+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  labs(title="Growth of Nonaffiliated voters vs Combined Minorities")
 
 ```
 

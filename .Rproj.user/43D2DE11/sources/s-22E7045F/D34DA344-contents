@@ -188,7 +188,7 @@ rm(Democrat,Republican,Independent,Nonaffiliated,Other,TS)
 
 ```
 
-```{r District 8 Final, include==FALSE}
+```{r District 8 Final, include=FALSE,message=FALSE}
 TS<-District_SS08%>%
   as_tsibble()
 
@@ -241,7 +241,7 @@ rm(Democrat,Republican,Independent,Nonaffiliated,Other,TS)
 
 ```
 
-```{r District 10 Final, include==FALSE}
+```{r District 10 Final, include=FALSE,message=FALSE}
 TS<-District_SS10%>%
   as_tsibble()
 
@@ -294,7 +294,7 @@ rm(Democrat,Republican,Independent,Nonaffiliated,Other,TS)
 
 ```
 
-```{r District 23 Final, include==FALSE}
+```{r District 23 Final, include=FALSE,message=FALSE}
 TS<-District_SS23%>%
   as_tsibble()
 
@@ -347,7 +347,7 @@ rm(Democrat,Republican,Independent,Nonaffiliated,Other,TS)
 
 ```
 
-```{r District 30 Final, include==FALSE}
+```{r District 30 Final, include=FALSE,message=FALSE}
 TS<-District_SS30%>%
   as_tsibble()
 
@@ -401,7 +401,7 @@ rm(Democrat,Republican,Independent,Nonaffiliated,Other,TS)
 ```
 
 
-```{r Creating Percentages, inlcude = FALSE}
+```{r Creating Percentages, inlcude=FALSE,message=FALSE}
 
 District_SS07_Complete<-District_SS07_Complete%>%
   mutate(Republican_Per = round((Republican/District_Total)*100,1),
@@ -466,7 +466,7 @@ Election_2022<-full_join(District_SS07_Election_Day,District_SS08_Election_Day)%
 
 ### Here is what the forecasts look like
 
-```{r Senate District 7 Outcome, echo=FALSE}
+```{r Senate District 7 Outcome, echo=FALSE,message=FALSE}
 
 start<-yearmonth(floor_date(ymd("2021-06-01"), "month"))
 

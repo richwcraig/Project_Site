@@ -15,6 +15,7 @@ meta_img: images/image.png
 description: Description for the page
 ---
 
+
 ```{r Voters, include=FALSE}
 voters<-read_csv("G:/My Drive/Documents/Willamette/Graduate/DATA 510 Capstone/Voter Registration.csv")
 ```
@@ -250,39 +251,44 @@ Senate_Model<-left_join(Senate_Demographics,senate_outcome)%>%
 
 ggplot(Senate_Model,aes(x=pop_density,y=Growth))+
   geom_point()+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  labs(title="Growth of Nonaffiliated voters vs Population Density")
 
 ggplot(Senate_Model,aes(x=house_density,y=Growth))+
   geom_point()+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  labs(title="Growth of Nonaffiliated voters vs Housing Density")
 
 ggplot(Senate_Model,aes(x=((pop_density+house_density)/2),y=Growth))+
   geom_point()+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  labs(title="Growth of Nonaffiliated voters vs Average Density")
 
 ggplot(Senate_Model,aes(x=white_per,y=Growth))+
   geom_point()+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  labs(title="Growth of Nonaffiliated voters vs Percent of White Population")
 
 ggplot(Senate_Model,aes(x=black_per,y=Growth))+
   geom_point()+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  labs(title="Growth of Nonaffiliated voters vs Percent of Black Population")
 
 ggplot(Senate_Model,aes(x=latinx_per,y=Growth))+
   geom_point()+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  labs(title="Growth of Nonaffiliated voters vs Percent of Latinx Population")
 
 ggplot(Senate_Model,aes(x=asian_per,y=Growth))+
   geom_point()+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  labs(title="Growth of Nonaffiliated voters vs Percent of Asian Population")
 
-ggplot(Senate_Model,aes(x=asian_per,y=Growth))+
-  geom_point()+
-  geom_smooth(method="lm")
 
 ggplot(Senate_Model,aes(x=asian_per+latinx_per+black_per,y=Growth))+
   geom_point()+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  labs(title="Growth of Nonaffiliated voters vs Combined Minorities")
 
 ```
 
