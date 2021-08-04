@@ -1,7 +1,7 @@
 ---
 title: Investigating Non-Aflliated Voter Growth
 author: Richard Craig
-date: '2021-08-03'
+date: '2021-08-04'
 slug: []
 categories:
   - Oregon Politics
@@ -18,3 +18,221 @@ description: Description for the page
 <script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
 
 
+<div id="data-cleaning" class="section level3">
+<h3>Data Cleaning</h3>
+<p>This portion of the project is relatively straight forward. Starting out, I pulled in two datasets that are both data from the 2018 American Community Survey. The first dataset is data on the racial makeup of each of the 30 senate districts, so this includes population figures for White, Latinx, Black and Asian. The second dataset is pulling in the total population and the total number of houses in the district.</p>
+<pre class="r"><code>this.year=2019
+
+Oregon_Senate_race_acs &lt;- get_acs(geography = &quot;state legislative district (upper chamber)&quot;,
+                                  year=this.year,
+                                  state = &quot;OR&quot;, 
+                                  variables = c(&quot;B02001_001&quot;,&quot;B02001_002&quot;,&quot;B03001_003&quot;,&quot;B02001_003&quot;,&quot;B02001_005&quot;))
+
+Oregon_Senate_housing_acs&lt;- get_acs(geography = &quot;state legislative district (upper chamber)&quot;,
+                                    year=this.year, state = &quot;OR&quot;, 
+                                    variables = c(&quot;B02001_001&quot;,&quot;B25001_001&quot;),
+                                    geometry = TRUE)</code></pre>
+<pre><code>## 
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |=====                                                                 |   7%
+  |                                                                            
+  |==========                                                            |  14%
+  |                                                                            
+  |===========                                                           |  15%
+  |                                                                            
+  |================                                                      |  23%
+  |                                                                            
+  |====================                                                  |  28%
+  |                                                                            
+  |=========================                                             |  35%
+  |                                                                            
+  |==============================                                        |  43%
+  |                                                                            
+  |================================                                      |  46%
+  |                                                                            
+  |======================================                                |  54%
+  |                                                                            
+  |========================================                              |  57%
+  |                                                                            
+  |=============================================                         |  65%
+  |                                                                            
+  |==================================================                    |  72%
+  |                                                                            
+  |=====================================================                 |  75%
+  |                                                                            
+  |==========================================================            |  83%
+  |                                                                            
+  |============================================================          |  86%
+  |                                                                            
+  |==================================================================    |  94%
+  |                                                                            
+  |======================================================================| 100%</code></pre>
+<p>This next step is simple cleaning such as reorganizing the data into more the traditional format and also renaming the variables so that they actually mean something. For the demographics data, I calculated the percent of the total population for each of the four racial groups and for the housing data, I calculated the housing and population densities.</p>
+<pre class="r"><code>Oregon_Senate_race&lt;-Oregon_Senate_race_acs%&gt;%
+  pivot_wider(id_cols = c(&quot;GEOID&quot;, &quot;NAME&quot;),names_from = &quot;variable&quot;, values_from = estimate)%&gt;%
+  dplyr::select(NAME,total_pop= B02001_001, total_white= B02001_002,total_latinx= B03001_003,total_black= B02001_003, total_asian=B02001_005)
+
+Oregon_Senate_race&lt;-Oregon_Senate_race%&gt;%
+  mutate(white_per=total_white/total_pop,latinx_per=total_latinx/total_pop,black_per=total_black/total_pop, asian_per=total_asian/total_pop)</code></pre>
+<pre class="r"><code>Oregon_Senate_housing&lt;-Oregon_Senate_housing_acs%&gt;%
+  mutate(area=st_area(geometry))%&gt;%
+  as_tibble()%&gt;%
+  dplyr::select(GEOID, NAME, variable, estimate, area)%&gt;%
+  pivot_wider(id_cols = c(&quot;GEOID&quot;, &quot;NAME&quot;, &quot;area&quot;),names_from = &quot;variable&quot;, values_from = estimate)%&gt;%
+  mutate(total_pop=B02001_001, total_houses=B25001_001)%&gt;%
+  dplyr::select(-c(B02001_001,B25001_001))%&gt;%
+  mutate(area= as.numeric(area*(3.86102e-7)))%&gt;%
+  mutate(pop_density=total_pop/area,house_density=total_houses/area)</code></pre>
+<p>This is a similar step to the forecasting walk through and is just cleaning the voter registration file.</p>
+<pre class="r"><code>voters_clean&lt;-voters%&gt;%
+    mutate(Date=mdy(SYSDATE),House_District= as.factor(HD_CODE), Count=`COUNT(V.ID)`)%&gt;%
+    dplyr::select(Date,House_District,PARTY,Count)%&gt;%
+    group_by(Date,House_District,PARTY)%&gt;%
+    mutate(Total_For_Party=sum(Count))
+
+ voters_clean&lt;-voters_clean%&gt;%
+   dplyr::select(-Count)%&gt;%
+   unique()%&gt;%
+   arrange(Date)
+
+
+voters_clean&lt;-voters_clean%&gt;%
+  pivot_wider(id_cols = c(&quot;Date&quot;, &quot;House_District&quot;),names_from = PARTY, values_from = Total_For_Party)
+
+voters_clean$`Americans Elect`[is.na(voters_clean$`Americans Elect`)] &lt;- 0
+voters_clean$`Non Partisan`[is.na(voters_clean$`Non Partisan`)] &lt;- 0
+
+voters_clean&lt;-voters_clean%&gt;%
+  mutate(Other2=Other+`Working Families Party of Oregon`+Progressive+`Pacific Green`+Constitution+Libertarian+Other+`Americans Elect`+`Non Partisan`,
+         District_Total = Democrat + Republican+ Other2+`Independent Party`+ Nonaffiliated)%&gt;%
+  dplyr::select(Date,House_District, Democrat, Republican, Independent=`Independent Party`, Nonaffiliated,Other=Other2,District_Total)%&gt;%
+  drop_na()</code></pre>
+<p>The final step is creating the dependent variable that we will be modelling. This variable is the growth of non-affiliated voters over the last five years.</p>
+<pre class="r"><code>senate_clean2&lt;-senate_clean%&gt;%
+  group_by(Date,Senate_District)%&gt;%
+  mutate(Republican = sum(Republican), 
+         Democrat = sum(Democrat),
+         Other = sum(Other),
+         Independent = sum(Independent),
+         Nonaffiliated =  sum(Nonaffiliated))
+  
+
+senate_clean2&lt;-senate_clean2%&gt;%
+  mutate(District_Total = Democrat + Republican+ Other + Independent+ Nonaffiliated, Republican_Per=Republican/District_Total)%&gt;%
+  drop_na()
+
+senate_clean2&lt;-senate_clean2%&gt;%
+  dplyr::select(Date,Senate_District, Democrat, Republican, Independent, Nonaffiliated,Other,District_Total)%&gt;%
+  unique()%&gt;%
+  filter(Date== ymd(&quot;2021-06-01&quot;) | Date == ymd(&quot;2016-11-01&quot;))
+
+senate_outcome&lt;-senate_clean2%&gt;%
+  pivot_wider(id_cols = c(&quot;Senate_District&quot;),names_from = Date, values_from = Nonaffiliated)%&gt;%
+  mutate(Growth=`2021-06-01`/`2016-11-01`)%&gt;%
+  dplyr::select(District=Senate_District,Growth)
+
+rm(senate_clean2)</code></pre>
+</div>
+<div id="exploratory-data-analysis" class="section level3">
+<h3>Exploratory Data Analysis</h3>
+<p>The next step before I began modeling was some exploratory data analysis! I was mostly interested in the simple relationship between each of the individual independent variables with the dependent variable. What I found was that overall, these six variable are correlated. But, what I was worried about was that I had six features and only 30 data points. So to help reduce the likelihood of over fitting, I combined my variables into two new features, Density and Diversity. You can see how they are calculated in the next step where I actually fit the model.</p>
+<pre class="r"><code>Senate_Model&lt;-left_join(Senate_Demographics,senate_outcome)%&gt;%
+  dplyr::select(District,pop_density,house_density,white_per,latinx_per,black_per,asian_per,Growth)
+
+ggplot(Senate_Model,aes(x=pop_density,y=Growth))+
+  geom_point()+
+  geom_smooth(method=&quot;lm&quot;)+
+  labs(title=&quot;Growth of Nonaffiliated voters vs Population Density&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/Exploratory%20Data%20Analysis-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(Senate_Model,aes(x=house_density,y=Growth))+
+  geom_point()+
+  geom_smooth(method=&quot;lm&quot;)+
+  labs(title=&quot;Growth of Nonaffiliated voters vs Housing Density&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/Exploratory%20Data%20Analysis-2.png" width="672" /></p>
+<pre class="r"><code>ggplot(Senate_Model,aes(x=((pop_density+house_density)/2),y=Growth))+
+  geom_point()+
+  geom_smooth(method=&quot;lm&quot;)+
+  labs(title=&quot;Growth of Nonaffiliated voters vs Average Density&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/Exploratory%20Data%20Analysis-3.png" width="672" /></p>
+<pre class="r"><code>ggplot(Senate_Model,aes(x=white_per,y=Growth))+
+  geom_point()+
+  geom_smooth(method=&quot;lm&quot;)+
+  labs(title=&quot;Growth of Nonaffiliated voters vs Percent of White Population&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/Exploratory%20Data%20Analysis-4.png" width="672" /></p>
+<pre class="r"><code>ggplot(Senate_Model,aes(x=black_per,y=Growth))+
+  geom_point()+
+  geom_smooth(method=&quot;lm&quot;)+
+  labs(title=&quot;Growth of Nonaffiliated voters vs Percent of Black Population&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/Exploratory%20Data%20Analysis-5.png" width="672" /></p>
+<pre class="r"><code>ggplot(Senate_Model,aes(x=latinx_per,y=Growth))+
+  geom_point()+
+  geom_smooth(method=&quot;lm&quot;)+
+  labs(title=&quot;Growth of Nonaffiliated voters vs Percent of Latinx Population&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/Exploratory%20Data%20Analysis-6.png" width="672" /></p>
+<pre class="r"><code>ggplot(Senate_Model,aes(x=asian_per,y=Growth))+
+  geom_point()+
+  geom_smooth(method=&quot;lm&quot;)+
+  labs(title=&quot;Growth of Nonaffiliated voters vs Percent of Asian Population&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/Exploratory%20Data%20Analysis-7.png" width="672" /></p>
+<pre class="r"><code>ggplot(Senate_Model,aes(x=asian_per+latinx_per+black_per,y=Growth))+
+  geom_point()+
+  geom_smooth(method=&quot;lm&quot;)+
+  labs(title=&quot;Growth of Nonaffiliated voters vs Combined Minorities&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/Exploratory%20Data%20Analysis-8.png" width="672" /></p>
+</div>
+<div id="the-final-model" class="section level3">
+<h3>The ‘Final’ Model</h3>
+<pre class="r"><code>Senate_Model_final&lt;-Senate_Model%&gt;%
+  mutate(density=(house_density+pop_density)/2,diversity=asian_per+latinx_per+black_per)%&gt;%
+  dplyr::select(-c(pop_density,house_density,asian_per,latinx_per,black_per,white_per))
+
+senateo&lt;-Senate_Model_final%&gt;%
+  dplyr::select(-c(District))
+
+control &lt;-trainControl(method = &quot;cv&quot;, number = 5)
+
+fit &lt;-train(Growth~.,
+            data = senateo,
+            method = &quot;lm&quot;,
+            trControl = control,
+            preProcess=c(&quot;scale&quot;,&quot;center&quot;))
+
+fit</code></pre>
+<pre><code>## Linear Regression 
+## 
+## 30 samples
+##  2 predictor
+## 
+## Pre-processing: scaled (2), centered (2) 
+## Resampling: Cross-Validated (5 fold) 
+## Summary of sample sizes: 25, 22, 24, 24, 25 
+## Resampling results:
+## 
+##   RMSE        Rsquared   MAE       
+##   0.06048221  0.5512521  0.04977205
+## 
+## Tuning parameter &#39;intercept&#39; was held constant at a value of TRUE</code></pre>
+<pre class="r"><code>summary(fit)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = .outcome ~ ., data = dat)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.117776 -0.035207  0.005028  0.045678  0.104046 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  1.40032    0.01034 135.476  &lt; 2e-16 ***
+## density     -0.06165    0.01217  -5.067 2.54e-05 ***
+## diversity    0.01825    0.01217   1.500    0.145    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.05661 on 27 degrees of freedom
+## Multiple R-squared:  0.5014, Adjusted R-squared:  0.4645 
+## F-statistic: 13.58 on 2 and 27 DF,  p-value: 8.309e-05</code></pre>
+<p>While we do find that density is a good predictor of growth over the last year, this is in no way saying that it is actually driving that growth. This modelling process was more for my own curiosity and I would not use this model if I was attempting to accurately predict future growth of NAVs. It does begin to shed some light on where NAVs experienced the highest levels of growth.</p>
+</div>

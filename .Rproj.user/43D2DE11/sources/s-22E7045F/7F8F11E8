@@ -3,9 +3,9 @@
     "path": "G:/My Drive/Documents/Willamette/Graduate/DATA 510 Capstone/Project_Site/content/blog/2021-08-04-investigating-the-growth-of-non-affiliated-voters/index.Rmd",
     "project_path": "content/blog/2021-08-04-investigating-the-growth-of-non-affiliated-voters/index.Rmd",
     "type": "r_markdown",
-    "hash": "0",
+    "hash": "1698329083",
     "contents": "",
-    "dirty": true,
+    "dirty": false,
     "created": 1628087988818.0,
     "source_on_save": false,
     "relative_order": 4,
@@ -16,11 +16,11 @@
         "scrollLine": "0"
     },
     "folds": "",
-    "lastKnownWriteTime": 1628087996,
+    "lastKnownWriteTime": 1628088490,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1628087998833,
+    "last_content_update": 1628088490851,
     "read_only": false,
     "read_only_alternatives": []
 }

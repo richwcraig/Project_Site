@@ -1,19 +1,63 @@
 "0",""
 "0","library(fable)"
+"2","Loading required package: fabletools
+"
+"2","
+Attaching package: ‘fabletools’
+
+"
+"2","The following objects are masked from ‘package:caret’:
+
+    MAE, RMSE
+
+"
 "0","library(feasts)"
 "0","library(fpp3)"
+"2","[37m-- [1mAttaching packages[22m ----------------------------------------------------------------------------------------------------- fpp3 0.4.0 --[39m
+"
+"2","[37m[32mv[37m [34mtsibble    [37m 1.0.1     [32mv[37m [34mtsibbledata[37m 0.3.0[39m
+"
+"2","[37m-- [1mConflicts[22m ---------------------------------------------------------------------------------------------------------- fpp3_conflicts --
+[31mx[37m [34mlubridate[37m::[32mdate()[37m    masks [34mbase[37m::date()
+[31mx[37m [34mdplyr[37m::[32mfilter()[37m      masks [34mstats[37m::filter()
+[31mx[37m [34mtsibble[37m::[32mintersect()[37m masks [34mbase[37m::intersect()
+[31mx[37m [34mtsibble[37m::[32minterval()[37m  masks [34mlubridate[37m::interval()
+[31mx[37m [34mdplyr[37m::[32mlag()[37m         masks [34mstats[37m::lag()
+[31mx[37m [34mcaret[37m::[32mlift()[37m        masks [34mpurrr[37m::lift()
+[31mx[37m [34mfabletools[37m::[32mMAE()[37m    masks [34mcaret[37m::MAE()
+[31mx[37m [34mfabletools[37m::[32mRMSE()[37m   masks [34mcaret[37m::RMSE()
+[31mx[37m [34mtsibble[37m::[32msetdiff()[37m   masks [34mbase[37m::setdiff()
+[31mx[37m [34mtsibble[37m::[32munion()[37m     masks [34mbase[37m::union()[39m
+"
 "0","library(distributional)"
 "0","library(tidyverse)"
 "0","library(lubridate)"
 "0","library(tmap)"
+"2","Registered S3 method overwritten by 'htmlwidgets':
+  method           from         
+  print.htmlwidget tools:rstudio
+"
 "0","library(tigris)"
+"2","To enable 
+caching of data, set `options(tigris_use_cache = TRUE)` in your R script or .Rprofile.
+"
 "0","library(tidycensus)"
 "0","library(leaflet)"
 "0","library(maps)"
+"2","
+Attaching package: ‘maps’
+
+"
+"2","The following object is masked from ‘package:purrr’:
+
+    map
+
+"
+"0","library(""ggrepel"") "
 "0","voters<-read_csv(""G:/My Drive/Documents/Willamette/Graduate/DATA 510 Capstone/Voter Registration.csv"")"
 "1","[1m[1mRows: [1m[22m[34m[34m73470[34m[39m [1m[1mColumns: [1m[22m[34m[34m8[34m[39m
 "
-"1","[36m--[39m [1m[1mColumn specification[1m[22m [36m---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------[39m
+"1","[36m--[39m [1m[1mColumn specification[1m[22m [36m-----------------------------------------------------------------------------------------------------------------[39m
 [1mDelimiter:[22m "",""
 [31mchr[39m (7): COUNTY, HD_CODE, HD_NAME, CD_CODE, CD_NAME, PARTY, SYSDATE
 [32mdbl[39m (1): COUNT(V.ID)

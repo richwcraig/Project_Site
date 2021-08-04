@@ -84,6 +84,7 @@ senate_clean$Senate_District[senate_clean$House_District == "SR59"] <- "SS30"
 senate_clean$Senate_District[senate_clean$House_District == "SR60"] <- "SS30"
 senate_clean<-senate_clean%>%
   filter(Senate_District != "None")%>%
+  as.tibble()%>%
   select(-c(House_District))
 ```
 
@@ -108,7 +109,7 @@ senate_clean2<-senate_clean2%>%
 
 ```
 
-Finally, I broke down and created a for loop to go through and pull out all the data for each district and create the five individual datasets. After this step, I could now actually forecast voter registration for the 2022 Midterm election.
+Finally, I broke down and created a for loop to go through and pull out all the data for each district and create the five individual datasets. After this step, I could now forecast voter registration for the 2022 Midterm election.
 
 ```{r Creating Forecasting Datasets, message=FALSE}
 

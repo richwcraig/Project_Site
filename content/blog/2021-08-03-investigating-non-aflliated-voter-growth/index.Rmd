@@ -17,13 +17,6 @@ description: Description for the page
 
 
 ```{r Voters, include=FALSE}
-voters<-read_csv("G:/My Drive/Documents/Willamette/Graduate/DATA 510 Capstone/Voter Registration.csv")
-```
-### Data Cleaning
-
-This portion of the project is relatively straight forward. Starting out, I pulled in two datasets that are both data from the 2018 American Community Survey. The first dataset is data on the racial makeup of each of the 30 senate districts, so this includes population figures for White, Latinx, Black and Asian. The second dataset is pulling in the total population and the total number of houses in the district. 
-
-```{r Setup, message=FALSE}
 library(tidycensus)
 library(tidyverse)
 library(sf)
@@ -31,6 +24,14 @@ library(dplyr)
 library(lubridate)
 library(caret)
 library(dplyr)
+
+voters<-read_csv("G:/My Drive/Documents/Willamette/Graduate/DATA 510 Capstone/Voter Registration.csv")
+```
+### Data Cleaning
+
+This portion of the project is relatively straight forward. Starting out, I pulled in two datasets that are both data from the 2018 American Community Survey. The first dataset is data on the racial makeup of each of the 30 senate districts, so this includes population figures for White, Latinx, Black and Asian. The second dataset is pulling in the total population and the total number of houses in the district. 
+
+```{r Setup, message=FALSE}
 
 this.year=2019
 
@@ -46,7 +47,7 @@ Oregon_Senate_housing_acs<- get_acs(geography = "state legislative district (upp
 
 ```
 
-This next step is simple cleaning such as reorganizing the data into more the traditional format and also renaming the variables so that they actually mean something. For the demographics data, I calculated the percent of each of the four racial groups and for the housing data, I calculated the housing and population densities. 
+This next step is simple cleaning such as reorganizing the data into more the traditional format and also renaming the variables so that they actually mean something. For the demographics data, I calculated the percent of the total population for each of the four racial groups and for the housing data, I calculated the housing and population densities. 
 
 ```{r Cleaning Demographics Data, message=FALSE}
 Oregon_Senate_race<-Oregon_Senate_race_acs%>%
@@ -167,7 +168,7 @@ senate_clean<-senate_clean%>%
   dplyr::select(-c(House_District))
 ```
 
-The final step is the one of most interest as we are creating the dependent variable that we will be modelling. This variable is the growth of nonaffiliated voters over the last five years. 
+The final step is creating the dependent variable that we will be modelling. This variable is the growth of non-affiliated voters over the last five years. 
 
 ```{r Cleaning Senate Data, message=FALSE}
 

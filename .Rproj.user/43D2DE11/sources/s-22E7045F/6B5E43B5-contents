@@ -17,13 +17,6 @@ description: Description for the page
 
 
 ```{r Voters, include=FALSE}
-voters<-read_csv("G:/My Drive/Documents/Willamette/Graduate/DATA 510 Capstone/Voter Registration.csv")
-```
-### Data Cleaning
-
-This portion of the project is relatively straight forward. Starting out, I pulled in two datasets that are both data from the 2018 American Community Survey. The first dataset is data on the racial makeup of each of the 30 senate districts, so this includes population figures for White, Latinx, Black and Asian. The second dataset is pulling in the total population and the total number of houses in the district. 
-
-```{r Setup, message=FALSE}
 library(tidycensus)
 library(tidyverse)
 library(sf)
@@ -31,6 +24,14 @@ library(dplyr)
 library(lubridate)
 library(caret)
 library(dplyr)
+
+voters<-read_csv("G:/My Drive/Documents/Willamette/Graduate/DATA 510 Capstone/Voter Registration.csv")
+```
+### Data Cleaning
+
+This portion of the project is relatively straight forward. Starting out, I pulled in two datasets that are both data from the 2018 American Community Survey. The first dataset is data on the racial makeup of each of the 30 senate districts, so this includes population figures for White, Latinx, Black and Asian. The second dataset is pulling in the total population and the total number of houses in the district. 
+
+```{r Setup, message=FALSE}
 
 this.year=2019
 
