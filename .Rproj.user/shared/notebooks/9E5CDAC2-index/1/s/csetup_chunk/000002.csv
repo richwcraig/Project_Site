@@ -23,7 +23,7 @@
 "0","voters<-read_csv(""G:/My Drive/Documents/Willamette/Graduate/DATA 510 Capstone/Voter Registration.csv"")"
 "1","[1m[1mRows: [1m[22m[34m[34m73470[34m[39m [1m[1mColumns: [1m[22m[34m[34m8[34m[39m
 "
-"1","[36m--[39m [1m[1mColumn specification[1m[22m [36m-----------------------------------------------------------------------------------------------------------------------------------------------[39m
+"1","[36m--[39m [1m[1mColumn specification[1m[22m [36m-------------------------------------------------------------------[39m
 [1mDelimiter:[22m "",""
 [31mchr[39m (7): COUNTY, HD_CODE, HD_NAME, CD_CODE, CD_NAME, PARTY, SYSDATE
 [32mdbl[39m (1): COUNT(V.ID)

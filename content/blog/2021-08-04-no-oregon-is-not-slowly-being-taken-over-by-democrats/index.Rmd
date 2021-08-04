@@ -1,14 +1,13 @@
 ---
-title: No, Oregon is not slowly being taken over by Democrats.
-author: Richard Craig
+title: "No, Oregon is not slowly being taken over by Democrats."
+author: "Richard Craig"
 date: '2021-08-04'
 slug: []
-categories:
-  - Oregon Politics
+categories: Oregon Politics
 tags:
-  - Politics
-  - Voter Registration
-  - Elections
+- Politics
+- Voter Registration
+- Elections
 meta_img: images/image.png
 description: Final Capstone Paper
 ---
@@ -95,7 +94,7 @@ ggplot(statewide,aes(x=Date))+
   geom_line(aes(y=Democrat_Per))+
   geom_line(aes(y=Republican_Per))+
   ylim(20,40)+
-  geom_line(aes(y=Nonaffiliated_Per),color="blue")+
+  geom_line(aes(y=Nonaffiliated_Per),color="darkblue")+
   labs(title="Growth of Non-affiliated Voters following the Motor Voter Act")+
   ylab("Percent of Party")+
   theme(panel.background = element_blank(),

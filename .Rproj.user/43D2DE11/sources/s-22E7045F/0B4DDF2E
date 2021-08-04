@@ -3,7 +3,7 @@
     "path": "G:/My Drive/Documents/Willamette/Graduate/DATA 510 Capstone/Project_Site/content/blog/2021-08-04-no-oregon-is-not-slowly-being-taken-over-by-democrats/index.Rmd",
     "project_path": "content/blog/2021-08-04-no-oregon-is-not-slowly-being-taken-over-by-democrats/index.Rmd",
     "type": "r_markdown",
-    "hash": "2528910419",
+    "hash": "1837938246",
     "contents": "",
     "dirty": false,
     "created": 1628054928156.0,
@@ -12,16 +12,16 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "95,35",
-        "scrollLine": "84",
-        "last_setup_crc32": ""
+        "cursorPosition": "96,48",
+        "scrollLine": "109",
+        "last_setup_crc32": "22E7045F52ec2ca9"
     },
     "folds": "",
-    "lastKnownWriteTime": 1628096699,
+    "lastKnownWriteTime": 1628098204,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1628096699294,
+    "last_content_update": 1628098236384,
     "read_only": false,
     "read_only_alternatives": []
 }
