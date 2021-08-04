@@ -15,6 +15,7 @@ meta_img: images/image.png
 description: Description for the page
 ---
 
+
 ```{r Voters, include=FALSE}
 voters<-read_csv("G:/My Drive/Documents/Willamette/Graduate/DATA 510 Capstone/Voter Registration.csv")
 ```
