@@ -84,27 +84,28 @@ statewide<-voters_clean%>%
   dplyr::select(Date, Democrat,Republican,Independent,Other,Nonaffiliated)%>%
   unique()%>%
   mutate(Total=(Democrat+Republican+Other+Independent+Nonaffiliated),
-         Republican_Per = round((Republican/Total)*100,1),
-         Democrat_Per = round((Democrat/Total)*100,1),
-         Other_Per = round((Other/Total)*100,1),
-         Independent_Per = round((Independent/Total)*100,1),
-         Nonaffiliated_Per =  round((Nonaffiliated/Total)*100,1))
+         Republicans = round((Republican/Total)*100,1),
+         Democrats = round((Democrat/Total)*100,1),
+         `Non-Affiliated` =  round((Nonaffiliated/Total)*100,1))%>%
+  dplyr::select(Date,Republicans,Democrats,`Non-Affiliated`)%>%
+  pivot_longer(!Date,names_to = "Party",values_to = "Percent")
 
-ggplot(statewide,aes(x=Date))+
-  geom_line(aes(y=Democrat_Per))+
-  geom_line(aes(y=Republican_Per))+
+cutoff<-yearmonth(floor_date(ymd("2021-06-01"), "month"))
+  
+statewide_today<-statewide%>%
+  filter(Date==cutoff)
+
+ggplot(statewide,aes(x=Date,y=Percent,color=Party))+
+  geom_line()+
   ylim(20,40)+
-  geom_line(aes(y=Nonaffiliated_Per),color="darkblue")+
   labs(title="Growth of Non-affiliated Voters following the Motor Voter Act")+
   ylab("Percent of Party")+
+  scale_color_manual(values = c("black", "blue","grey"))+
   theme(panel.background = element_blank(),
         panel.border = element_blank(),
         axis.line = element_blank(),
         axis.ticks = element_blank(),
-        axis.title.x=element_blank(),
-        legend.text = element_blank(),
-        legend.title = element_blank(),
-        legend.key = element_blank())
+        axis.title.x=element_blank())
 
 ```
   
